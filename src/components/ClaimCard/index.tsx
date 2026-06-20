@@ -11,17 +11,34 @@ interface ClaimCardProps {
   showAttachment?: boolean
 }
 
+const categoryIcons: Record<string, string> = {
+  photo: '🖼️',
+  notice: '📋',
+  agreement: '📑',
+  attendance: '📊',
+  plan: '📅',
+  contract: '📄',
+  other: '📎'
+}
+
 const getAttachmentSummary = (attachments: Attachment[]) => {
-  const imageCount = attachments.filter((a) => a.type === 'image').length
-  const pdfCount = attachments.filter((a) => a.type === 'pdf').length
-  const docCount = attachments.filter((a) => a.type === 'doc').length
+  const categoryMap = new Map<string, { label: string; count: number; icon: string }>()
 
-  const items: { label: string; count: number; icon: string }[] = []
-  if (imageCount > 0) items.push({ label: '现场照片', count: imageCount, icon: '🖼️' })
-  if (pdfCount > 0) items.push({ label: 'PDF文档', count: pdfCount, icon: '📄' })
-  if (docCount > 0) items.push({ label: '文档', count: docCount, icon: '📝' })
+  attachments.forEach((att) => {
+    const key = att.categoryName
+    if (categoryMap.has(key)) {
+      const existing = categoryMap.get(key)!
+      categoryMap.set(key, { ...existing, count: existing.count + 1 })
+    } else {
+      categoryMap.set(key, {
+        label: att.categoryName,
+        count: 1,
+        icon: categoryIcons[att.category] || '�'
+      })
+    }
+  })
 
-  return items
+  return Array.from(categoryMap.values())
 }
 
 const ClaimCard: React.FC<ClaimCardProps> = ({ claim, onClick, showAttachment = true }) => {
@@ -78,9 +95,9 @@ const ClaimCard: React.FC<ClaimCardProps> = ({ claim, onClick, showAttachment = 
 
       {showAttachment && attachmentItems.length > 0 && (
         <View className={styles.attachmentBar}>
-          <Text className={styles.attachmentIcon}>📎</Text>
           {attachmentItems.map((item, index) => (
             <View key={index} className={styles.attachmentItem}>
+              <Text className={styles.attachmentItemIcon}>{item.icon}</Text>
               <Text className={styles.attachmentCount}>{item.count}</Text>
               <Text className={styles.attachmentLabel}>{item.label}</Text>
             </View>

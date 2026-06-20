@@ -4,7 +4,20 @@ import Taro, { useRouter, useDidShow } from '@tarojs/taro'
 import classnames from 'classnames'
 import StatusTag from '@/components/StatusTag'
 import styles from './index.module.scss'
-import { useClaimStore } from '@/store/useClaimStore'
+import { useClaimStore, syncStatusText } from '@/store/useClaimStore'
+import type { SyncStatus } from '@/types/claim'
+
+const partyIcons: Record<string, string> = {
+  contractor: '🏗️',
+  owner: '🏢',
+  supervisor: '👷'
+}
+
+const partyNames: Record<string, string> = {
+  contractor: '施工单位',
+  owner: '业主方',
+  supervisor: '监理'
+}
 
 const DetailPage: React.FC = () => {
   const router = useRouter()
@@ -44,6 +57,16 @@ const DetailPage: React.FC = () => {
 
   const isAudited = claim.status === 'approved' || claim.status === 'partial' || claim.status === 'rejected'
 
+  const getStatusClass = (status: SyncStatus) => {
+    if (status === 'read') return styles.read
+    if (status === 'synced') return styles.synced
+    return styles.unsynced
+  }
+
+  const sortedFlowRecords = [...claim.flowRecords].sort(
+    (a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()
+  )
+
   return (
     <ScrollView className={styles.page} scrollY>
       <View className={styles.sectionCard}>
@@ -63,6 +86,10 @@ const DetailPage: React.FC = () => {
       <View className={styles.sectionCard}>
         <Text className={styles.sectionTitle}>基本信息</Text>
         <View className={styles.infoList}>
+          <View className={styles.infoItem}>
+            <Text className={styles.infoLabel}>所属项目</Text>
+            <Text className={styles.infoValue}>{claim.projectName}</Text>
+          </View>
           <View className={styles.infoItem}>
             <Text className={styles.infoLabel}>停工日期</Text>
             <Text className={styles.infoValue}>{claim.stopDate}</Text>
@@ -126,7 +153,9 @@ const DetailPage: React.FC = () => {
               </View>
               <View className={styles.attachmentInfo}>
                 <Text className={styles.attachmentName}>{att.name}</Text>
-                {att.size && <Text className={styles.attachmentSize}>{att.size}</Text>}
+                <Text className={styles.attachmentSize} style={{ fontSize: '20rpx', color: '#86909c' }}>
+                  {att.categoryName}
+                </Text>
               </View>
               <Text className={styles.infoValue} style={{ flex: 'none' }}>›</Text>
             </View>
@@ -138,6 +167,59 @@ const DetailPage: React.FC = () => {
           </View>
         )}
       </View>
+
+      {isAudited && (
+        <View className={styles.syncSection}>
+          <Text className={styles.syncTitle}>意见回传状态</Text>
+          <View className={styles.syncStatusBar}>
+            <View
+              className={classnames(styles.syncStatusItem, getStatusClass(claim.syncStatus.contractor))}
+            >
+              <View className={styles.syncPartyIcon}>🏗️</View>
+              <View className={styles.syncPartyInfo}>
+                <Text className={styles.syncPartyName}>施工单位</Text>
+                <Text className={classnames(styles.syncStatusText, getStatusClass(claim.syncStatus.contractor))}>
+                  {syncStatusText[claim.syncStatus.contractor]}
+                </Text>
+              </View>
+            </View>
+            <View
+              className={classnames(styles.syncStatusItem, getStatusClass(claim.syncStatus.owner))}
+            >
+              <View className={styles.syncPartyIcon}>🏢</View>
+              <View className={styles.syncPartyInfo}>
+                <Text className={styles.syncPartyName}>业主方</Text>
+                <Text className={classnames(styles.syncStatusText, getStatusClass(claim.syncStatus.owner))}>
+                  {syncStatusText[claim.syncStatus.owner]}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          {sortedFlowRecords.length > 0 && (
+            <View className={styles.flowRecords}>
+              <Text className={styles.flowTitle}>流转记录</Text>
+              <View className={styles.flowTimeline}>
+                {sortedFlowRecords.map((record) => (
+                  <View key={record.id} className={classnames(styles.flowItem, styles[record.action])}>
+                    <View className={styles.flowContent}>
+                      <View className={styles.flowHeader}>
+                        <Text className={styles.flowParty}>
+                          {partyIcons[record.party]} {partyNames[record.party]}
+                        </Text>
+                        <Text className={styles.flowTime}>{record.time}</Text>
+                      </View>
+                      {record.remark && (
+                        <Text className={styles.flowRemark}>{record.remark}</Text>
+                      )}
+                    </View>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+        </View>
+      )}
 
       {auditRecords.length > 0 && (
         <View className={styles.sectionCard}>
@@ -160,6 +242,32 @@ const DetailPage: React.FC = () => {
               {record.remark && (
                 <Text className={styles.auditRemark}>备注：{record.remark}</Text>
               )}
+
+              {record.approvedResources.length > 0 && (
+                <View style={{ marginTop: '20rpx', marginBottom: '12rpx' }}>
+                  <Text style={{ fontSize: '22rpx', color: '#86909c', marginBottom: '12rpx' }}>
+                    认可明细：
+                  </Text>
+                  <View style={{ display: 'flex', flexWrap: 'wrap', gap: '12rpx' }}>
+                    {record.approvedResources.map((res, idx) => (
+                      <View
+                        key={idx}
+                        style={{
+                          padding: '8rpx 16rpx',
+                          background: 'rgba(30, 94, 255, 0.08)',
+                          borderRadius: '8rpx',
+                          fontSize: '22rpx',
+                          color: '#1e5eff'
+                        }}
+                      >
+                        {res.name} {res.count}{res.unit}
+                        {res.duration ? ` × ${res.duration}${res.durationUnit}` : ''}
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              )}
+
               <Text className={styles.auditTime}>{record.auditTime}</Text>
             </View>
           ))}

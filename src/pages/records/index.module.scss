@@ -3,6 +3,7 @@
 .page {
   min-height: 100vh;
   background: $color-bg-page;
+  padding-bottom: 120rpx;
 }
 
 .statsHeader {
@@ -47,58 +48,79 @@
   opacity: 0.9;
 }
 
-.filterTabs {
+.toolbar {
   display: flex;
-  background: $color-bg-card;
+  align-items: center;
+  gap: $spacing-sm;
   padding: $spacing-sm $page-padding;
+  background: $color-bg-card;
   border-bottom: 1rpx solid $color-divider;
   position: sticky;
   top: 0;
   z-index: 10;
 }
 
-.tabItem {
-  flex: 1;
-  height: 72rpx;
+.filterBtn {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: $spacing-xs;
+  padding: $spacing-sm $spacing-md;
+  background: $color-bg-page;
+  border-radius: $radius-button;
   font-size: $font-size-sm;
   color: $color-text-secondary;
-  position: relative;
   transition: all $transition-base;
 
   &.active {
+    background: rgba(30, 94, 255, 0.1);
     color: $color-primary;
-    font-weight: $font-weight-semibold;
-
-    &::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 48rpx;
-      height: 6rpx;
-      background: $color-primary;
-      border-radius: 3rpx;
-    }
   }
+}
+
+.filterCount {
+  min-width: 36rpx;
+  height: 36rpx;
+  padding: 0 $spacing-xs;
+  background: $color-primary;
+  color: $color-text-white;
+  border-radius: $radius-round;
+  font-size: $font-size-xs;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.activeFilters {
+  flex: 1;
+  display: flex;
+  gap: $spacing-sm;
+  overflow-x: auto;
+  white-space: nowrap;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.activeFilterTag {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-xs;
+  padding: $spacing-xs $spacing-sm;
+  background: rgba(30, 94, 255, 0.08);
+  color: $color-primary;
+  border-radius: $radius-sm;
+  font-size: $font-size-xs;
+  flex-shrink: 0;
+}
+
+.clearFilter {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
 }
 
 .listContainer {
   padding: $spacing-md $page-padding;
-}
-
-.timeGroup {
-  margin-bottom: $spacing-lg;
-}
-
-.timeGroupTitle {
-  font-size: $font-size-sm;
-  color: $color-text-tertiary;
-  margin-bottom: $spacing-sm;
-  padding-left: $spacing-xs;
 }
 
 .auditCard {
@@ -162,6 +184,107 @@
   margin-bottom: $spacing-md;
 }
 
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-md;
+  margin-bottom: $spacing-md;
+  padding: $spacing-sm $spacing-md;
+  background: $color-bg-page;
+  border-radius: $radius-sm;
+}
+
+.metaItem {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+
+  span {
+    color: $color-text-secondary;
+    margin-left: $spacing-xs;
+  }
+}
+
+.expandBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+
+  .arrow {
+    margin-left: $spacing-xs;
+    transition: transform $transition-base;
+
+    &.expanded {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+.detailSection {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height $transition-base;
+
+  &.expanded {
+    max-height: 1000rpx;
+  }
+}
+
+.detailContent {
+  padding-top: $spacing-md;
+}
+
+.detailSubtitle {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+  margin-bottom: $spacing-sm;
+}
+
+.resourceTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: $spacing-md;
+}
+
+.tableHeader {
+  display: flex;
+  background: $color-bg-page;
+  border-radius: $radius-sm $radius-sm 0 0;
+}
+
+.tableCell {
+  flex: 1;
+  padding: $spacing-sm $spacing-xs;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  text-align: center;
+
+  &:first-child {
+    text-align: left;
+    padding-left: $spacing-md;
+  }
+}
+
+.tableRow {
+  display: flex;
+  border-bottom: 1rpx solid $color-divider;
+  background: $color-bg-card;
+
+  &:last-child {
+    border-bottom: none;
+    border-radius: 0 0 $radius-sm $radius-sm;
+  }
+
+  .tableCell {
+    font-size: $font-size-sm;
+    color: $color-text-primary;
+  }
+}
+
 .scopeBox {
   background: $color-bg-page;
   border-radius: $radius-md;
@@ -197,6 +320,11 @@
 .auditTime {
   font-size: $font-size-xs;
   color: $color-text-tertiary;
+}
+
+.viewDetailBtn {
+  font-size: $font-size-xs;
+  color: $color-primary;
 }
 
 .emptyState {

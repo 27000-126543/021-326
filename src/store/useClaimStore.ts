@@ -1,8 +1,24 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import Taro from '@tarojs/taro'
-import type { ClaimRecord, AuditRecord, UserInfo, VerifyResult, ResourceInfo } from '@/types/claim'
-import { mockPendingClaims, mockReviewingClaims, mockApprovedClaims, mockUserInfo, mockAuditRecords } from '@/data/mockData'
+import type {
+  ClaimRecord,
+  AuditRecord,
+  UserInfo,
+  VerifyResult,
+  ResourceInfo,
+  FilterParams,
+  FlowRecord,
+  SyncStatus
+} from '@/types/claim'
+import {
+  mockPendingClaims,
+  mockReviewingClaims,
+  mockApprovedClaims,
+  mockUserInfo,
+  mockAuditRecords,
+  filterOptions
+} from '@/data/mockData'
 
 const initialClaims = [...mockPendingClaims, ...mockReviewingClaims, ...mockApprovedClaims]
 
@@ -36,6 +52,8 @@ interface ClaimStore {
   claims: ClaimRecord[]
   auditRecords: AuditRecord[]
   user: UserInfo
+  submittingClaimIds: Set<string>
+  filterOptions: typeof filterOptions
 
   getClaimById: (id: string) => ClaimRecord | undefined
   getAuditRecordsByClaimId: (claimId: string) => AuditRecord[]
@@ -43,16 +61,32 @@ interface ClaimStore {
   getReviewingClaims: () => ClaimRecord[]
   getApprovedClaims: () => ClaimRecord[]
 
+  filterAuditRecords: (params: FilterParams) => AuditRecord[]
+
   submitAudit: (params: {
     claimId: string
     result: VerifyResult
     approvedScope: string
     approvedResources: ResourceInfo[]
     remark?: string
-  }) => AuditRecord
+  }) => AuditRecord | null
+
+  markAsRead: (claimId: string, party: 'contractor' | 'owner') => void
 
   updateStats: () => void
+  isSubmitting: (claimId: string) => boolean
   resetStore: () => void
+}
+
+const generateTimeString = () => {
+  const now = new Date()
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+}
+
+const syncStatusText: Record<SyncStatus, string> = {
+  unsynced: '未同步',
+  synced: '已同步',
+  read: '已读'
 }
 
 export const useClaimStore = create<ClaimStore>()(
@@ -61,6 +95,8 @@ export const useClaimStore = create<ClaimStore>()(
       claims: initialClaims,
       auditRecords: mockAuditRecords,
       user: mockUserInfo,
+      submittingClaimIds: new Set(),
+      filterOptions,
 
       getClaimById: (id) => {
         return get().claims.find((c) => c.id === id)
@@ -86,40 +122,175 @@ export const useClaimStore = create<ClaimStore>()(
         )
       },
 
+      filterAuditRecords: (params) => {
+        let records = [...get().auditRecords]
+
+        if (params.projectName && params.projectName !== 'all') {
+          records = records.filter((r) => r.projectName === params.projectName)
+        }
+        if (params.contractor && params.contractor !== 'all') {
+          const claimIds = get()
+            .claims.filter((c) => c.contractor === params.contractor)
+            .map((c) => c.id)
+          records = records.filter((r) => claimIds.includes(r.claimId))
+        }
+        if (params.reasonCategory && params.reasonCategory !== 'all') {
+          const claimIds = get()
+            .claims.filter((c) => c.reasonCategory === params.reasonCategory)
+            .map((c) => c.id)
+          records = records.filter((r) => claimIds.includes(r.claimId))
+        }
+        if (params.result && params.result !== 'all') {
+          records = records.filter((r) => r.result === params.result)
+        }
+        if (params.startDate) {
+          records = records.filter((r) => r.auditTime >= params.startDate)
+        }
+        if (params.endDate) {
+          records = records.filter((r) => r.auditTime <= params.endDate + ' 23:59')
+        }
+
+        return records.sort(
+          (a, b) => new Date(b.auditTime).getTime() - new Date(a.auditTime).getTime()
+        )
+      },
+
       submitAudit: ({ claimId, result, approvedScope, approvedResources, remark }) => {
-        const now = new Date()
-        const auditTime = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+        const state = get()
 
-        const newStatus =
-          result === 'true' ? 'approved' : result === 'partial' ? 'partial' : 'rejected'
+        if (state.submittingClaimIds.has(claimId)) {
+          console.warn('[Store] 重复提交拦截:', claimId)
+          return null
+        }
 
-        const claim = get().claims.find((c) => c.id === claimId)
-        const user = get().user
+        const claim = state.claims.find((c) => c.id === claimId)
+        if (!claim) {
+          console.error('[Store] 事件不存在:', claimId)
+          return null
+        }
 
-        const newRecord: AuditRecord = {
-          id: `ar_${Date.now()}`,
-          claimId,
-          claimCode: claim?.code || '',
-          auditor: user.name,
-          auditorRole: user.roleName,
-          auditTime,
-          result,
-          approvedScope,
-          approvedResources,
-          remark
+        if (claim.status === 'approved' || claim.status === 'partial' || claim.status === 'rejected') {
+          console.warn('[Store] 事件已审核，禁止重复提交:', claimId)
+          return null
         }
 
         set((state) => ({
-          claims: state.claims.map((c) =>
-            c.id === claimId ? { ...c, status: newStatus, currentHandler: user.name } : c
-          ),
-          auditRecords: [newRecord, ...state.auditRecords]
+          submittingClaimIds: new Set(state.submittingClaimIds).add(claimId)
         }))
 
-        get().updateStats()
+        try {
+          const auditTime = generateTimeString()
+          const user = state.user
 
-        console.log('[Store] 提交审核成功:', newRecord)
-        return newRecord
+          const newStatus =
+            result === 'true' ? 'approved' : result === 'partial' ? 'partial' : 'rejected'
+
+          const newRecord: AuditRecord = {
+            id: `ar_${Date.now()}`,
+            claimId,
+            claimCode: claim.code,
+            projectName: claim.projectName,
+            auditor: user.name,
+            auditorRole: user.roleName,
+            auditTime,
+            result,
+            approvedScope,
+            approvedResources: [...approvedResources],
+            remark,
+            readStatus: { contractor: false, owner: false }
+          }
+
+          const auditFlow: FlowRecord = {
+            id: `flow_${claimId}_audit_${Date.now()}`,
+            claimId,
+            auditRecordId: newRecord.id,
+            action: 'audit',
+            party: 'supervisor',
+            partyName: user.name,
+            status: 'synced',
+            time: auditTime,
+            remark: `监理审核：${result === 'true' ? '属实' : result === 'partial' ? '部分属实' : '不属实'}`
+          }
+
+          const syncFlow: FlowRecord = {
+            id: `flow_${claimId}_sync_${Date.now()}`,
+            claimId,
+            auditRecordId: newRecord.id,
+            action: 'sync',
+            party: 'supervisor',
+            partyName: user.name,
+            status: 'synced',
+            time: auditTime,
+            remark: '已同步至施工单位和业主方'
+          }
+
+          set((state) => ({
+            claims: state.claims.map((c) =>
+              c.id === claimId
+                ? {
+                    ...c,
+                    status: newStatus,
+                    currentHandler: user.name,
+                    syncStatus: {
+                      contractor: 'synced',
+                      owner: 'synced'
+                    },
+                    flowRecords: [...c.flowRecords, auditFlow, syncFlow]
+                  }
+                : c
+            ),
+            auditRecords: [newRecord, ...state.auditRecords]
+          }))
+
+          get().updateStats()
+
+          console.log('[Store] 提交审核成功:', newRecord)
+          return newRecord
+        } finally {
+          set((state) => {
+            const newSet = new Set(state.submittingClaimIds)
+            newSet.delete(claimId)
+            return { submittingClaimIds: newSet }
+          })
+        }
+      },
+
+      markAsRead: (claimId, party) => {
+        const time = generateTimeString()
+
+        set((state) => ({
+          claims: state.claims.map((c) =>
+            c.id === claimId
+              ? {
+                  ...c,
+                  syncStatus: {
+                    ...c.syncStatus,
+                    [party]: 'read'
+                  },
+                  flowRecords: [
+                    ...c.flowRecords,
+                    {
+                      id: `flow_${claimId}_read_${Date.now()}`,
+                      claimId,
+                      action: 'read',
+                      party,
+                      partyName: party === 'contractor' ? '施工单位' : '业主方',
+                      status: 'read',
+                      time,
+                      remark: `${party === 'contractor' ? '施工单位' : '业主方'}已查看`
+                    }
+                  ]
+                }
+              : c
+          ),
+          auditRecords: state.auditRecords.map((r) =>
+            r.claimId === claimId
+              ? { ...r, readStatus: { ...r.readStatus, [party]: true } }
+              : r
+          )
+        }))
+
+        console.log('[Store] 标记已读:', claimId, party)
       },
 
       updateStats: () => {
@@ -144,12 +315,19 @@ export const useClaimStore = create<ClaimStore>()(
         }))
       },
 
+      isSubmitting: (claimId) => {
+        return get().submittingClaimIds.has(claimId)
+      },
+
       resetStore: () => {
         set({
           claims: initialClaims,
           auditRecords: mockAuditRecords,
-          user: mockUserInfo
+          user: mockUserInfo,
+          submittingClaimIds: new Set()
         })
+        Taro.removeStorageSync('claim-audit-store')
+        console.log('[Store] 数据已重置')
       }
     }),
     {
@@ -163,3 +341,5 @@ export const useClaimStore = create<ClaimStore>()(
     }
   )
 )
+
+export { syncStatusText }

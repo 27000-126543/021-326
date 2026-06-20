@@ -2,6 +2,22 @@ export type ClaimStatus = 'pending' | 'reviewing' | 'approved' | 'partial' | 're
 
 export type VerifyResult = 'true' | 'partial' | 'false'
 
+export type SyncStatus = 'unsynced' | 'synced' | 'read'
+
+export type PartyType = 'contractor' | 'owner' | 'supervisor'
+
+export interface FlowRecord {
+  id: string
+  claimId: string
+  auditRecordId?: string
+  action: 'submit' | 'audit' | 'sync' | 'read' | 'comment'
+  party: PartyType
+  partyName: string
+  status: SyncStatus
+  time: string
+  remark?: string
+}
+
 export interface ResourceInfo {
   type: string
   name: string
@@ -15,6 +31,8 @@ export interface Attachment {
   id: string
   name: string
   type: 'image' | 'pdf' | 'doc'
+  category: 'photo' | 'notice' | 'agreement' | 'attendance' | 'plan' | 'contract' | 'other'
+  categoryName: string
   size?: string
   url?: string
 }
@@ -23,6 +41,7 @@ export interface ClaimRecord {
   id: string
   code: string
   title: string
+  projectName: string
   contractor: string
   submitDate: string
   stopDate: string
@@ -36,12 +55,18 @@ export interface ClaimRecord {
   currentHandler?: string
   submitter: string
   submitterPhone?: string
+  syncStatus: {
+    contractor: SyncStatus
+    owner: SyncStatus
+  }
+  flowRecords: FlowRecord[]
 }
 
 export interface AuditRecord {
   id: string
   claimId: string
   claimCode: string
+  projectName: string
   auditor: string
   auditorRole: string
   auditTime: string
@@ -49,6 +74,10 @@ export interface AuditRecord {
   approvedScope: string
   approvedResources: ResourceInfo[]
   remark?: string
+  readStatus: {
+    contractor: boolean
+    owner: boolean
+  }
 }
 
 export interface UserInfo {
@@ -65,4 +94,13 @@ export interface UserInfo {
     approved: number
     total: number
   }
+}
+
+export interface FilterParams {
+  projectName?: string
+  contractor?: string
+  reasonCategory?: string
+  result?: VerifyResult | 'all'
+  startDate?: string
+  endDate?: string
 }

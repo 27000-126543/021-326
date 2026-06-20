@@ -98,7 +98,7 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: $spacing-sm;
+  gap: $spacing-sm $spacing-md;
   padding: $spacing-sm $spacing-md;
   background: rgba(0, 180, 42, 0.06);
   border-radius: $radius-sm;
@@ -117,10 +117,16 @@
   color: $color-text-secondary;
 }
 
+.attachmentItemIcon {
+  font-size: $font-size-sm;
+  margin-right: $spacing-xs;
+  line-height: 1;
+}
+
 .attachmentCount {
   color: $color-primary;
   font-weight: $font-weight-medium;
-  margin: 0 $spacing-xs;
+  margin-right: $spacing-xs;
 }
 
 .attachmentLabel {

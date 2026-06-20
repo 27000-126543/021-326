@@ -1,0 +1,408 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 180rpx;
+}
+
+.basicInfo {
+  background: $color-bg-card;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+}
+
+.basicTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-sm;
+}
+
+.basicDesc {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: 1.5;
+}
+
+.section {
+  background: $color-bg-card;
+  margin: 0 $page-padding $spacing-md;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+  display: flex;
+  align-items: center;
+
+  &::before {
+    content: '';
+    width: 6rpx;
+    height: 32rpx;
+    background: $color-primary;
+    border-radius: 3rpx;
+    margin-right: $spacing-sm;
+  }
+}
+
+.resultOptions {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.resultOption {
+  display: flex;
+  align-items: center;
+  padding: $spacing-md $spacing-lg;
+  border: 2rpx solid $color-border;
+  border-radius: $radius-md;
+  transition: all $transition-base;
+  position: relative;
+
+  &.active {
+    border-color: $color-primary;
+    background: rgba(30, 94, 255, 0.04);
+  }
+
+  &.true.active {
+    border-color: $status-true;
+    background: $bg-true;
+  }
+
+  &.partial.active {
+    border-color: $status-partial;
+    background: $bg-partial;
+  }
+
+  &.false.active {
+    border-color: $status-false;
+    background: $bg-false;
+  }
+}
+
+.radioIcon {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  border: 2rpx solid $color-border;
+  margin-right: $spacing-md;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .active & {
+    border-color: $color-primary;
+    background: $color-primary;
+
+    &::after {
+      content: '';
+      width: 16rpx;
+      height: 16rpx;
+      border-radius: 50%;
+      background: $color-text-white;
+    }
+  }
+
+  .true.active & {
+    border-color: $status-true;
+    background: $status-true;
+  }
+
+  .partial.active & {
+    border-color: $status-partial;
+    background: $status-partial;
+  }
+
+  .false.active & {
+    border-color: $status-false;
+    background: $status-false;
+  }
+}
+
+.optionContent {
+  flex: 1;
+}
+
+.optionTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
+}
+
+.optionDesc {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.resourceSection {
+  margin-top: $spacing-md;
+}
+
+.resourceItem {
+  display: flex;
+  align-items: center;
+  padding: $spacing-md 0;
+  border-bottom: 1rpx solid $color-divider;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.resourceInfo {
+  flex: 1;
+}
+
+.resourceName {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
+}
+
+.resourceType {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.resourceControl {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.controlBtn {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: $radius-sm;
+  background: $color-bg-page;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-lg;
+  color: $color-text-secondary;
+  transition: all $transition-base;
+
+  &:active {
+    background: $color-border;
+  }
+
+  &.disabled {
+    opacity: 0.4;
+  }
+}
+
+.countInput {
+  width: 100rpx;
+  height: 56rpx;
+  text-align: center;
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+  background: $color-bg-page;
+  border-radius: $radius-sm;
+  border: none;
+}
+
+.unitText {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  width: 48rpx;
+}
+
+.scopeSection {
+  margin-top: $spacing-md;
+}
+
+.scopeLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-sm;
+}
+
+.scopeInput {
+  width: 100%;
+  min-height: 160rpx;
+  padding: $spacing-md;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  line-height: 1.6;
+  border: none;
+}
+
+.remarkSection {
+  margin-top: $spacing-md;
+}
+
+.remarkLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-sm;
+}
+
+.remarkInput {
+  width: 100%;
+  min-height: 120rpx;
+  padding: $spacing-md;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  line-height: 1.6;
+  border: none;
+}
+
+.bottomBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: $color-bg-card;
+  padding: $spacing-md $page-padding;
+  padding-bottom: calc(#{$spacing-md} + env(safe-area-inset-bottom));
+  box-shadow: 0 -2rpx 16rpx rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+  z-index: 100;
+}
+
+.tipsText {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  text-align: center;
+}
+
+.actionRow {
+  display: flex;
+  gap: $spacing-md;
+}
+
+.btn {
+  @include button-reset;
+  flex: 1;
+  height: $button-height-lg;
+  border-radius: $radius-button;
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.85;
+    transform: scale(0.98);
+  }
+
+  &.primary {
+    background: $color-primary;
+    color: $color-text-white;
+  }
+
+  &.secondary {
+    background: $color-bg-page;
+    color: $color-text-secondary;
+  }
+
+  &.disabled {
+    opacity: 0.5;
+  }
+}
+
+.confirmDialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 0 $spacing-xl;
+}
+
+.dialogContent {
+  width: 100%;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-xl;
+}
+
+.dialogTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  text-align: center;
+  margin-bottom: $spacing-md;
+}
+
+.dialogText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: 1.6;
+  margin-bottom: $spacing-lg;
+  text-align: center;
+}
+
+.dialogResult {
+  display: inline-block;
+  padding: $spacing-xs $spacing-md;
+  border-radius: $radius-sm;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  margin-bottom: $spacing-md;
+
+  &.true {
+    background: $bg-true;
+    color: $status-true;
+  }
+
+  &.partial {
+    background: $bg-partial;
+    color: $status-partial;
+  }
+
+  &.false {
+    background: $bg-false;
+    color: $status-false;
+  }
+}
+
+.dialogBtns {
+  display: flex;
+  gap: $spacing-md;
+}
+
+.dialogBtn {
+  @include button-reset;
+  flex: 1;
+  height: 80rpx;
+  border-radius: $radius-button;
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.85;
+  }
+
+  &.primary {
+    background: $color-primary;
+    color: $color-text-white;
+  }
+
+  &.secondary {
+    background: $color-bg-page;
+    color: $color-text-secondary;
+  }
+}

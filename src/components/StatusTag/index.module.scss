@@ -1,0 +1,37 @@
+@use '@/styles/variables.scss' as *;
+
+.statusTag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rpx 16rpx;
+  border-radius: $radius-sm;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  white-space: nowrap;
+}
+
+.pending {
+  color: $status-pending;
+  background: $bg-pending;
+}
+
+.reviewing {
+  color: $status-reviewing;
+  background: $bg-reviewing;
+}
+
+.approved {
+  color: $status-true;
+  background: $bg-true;
+}
+
+.partial {
+  color: $status-partial;
+  background: $bg-partial;
+}
+
+.rejected {
+  color: $status-false;
+  background: $bg-false;
+}

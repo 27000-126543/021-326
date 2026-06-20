@@ -1,0 +1,117 @@
+@use '@/styles/variables.scss' as *;
+
+.claimCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.98);
+    box-shadow: $shadow-card-hover;
+  }
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.codeText {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.titleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.titleText {
+  flex: 1;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  line-height: 1.4;
+  margin-right: $spacing-sm;
+}
+
+.infoGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm 0;
+  margin-bottom: $spacing-md;
+}
+
+.infoItem {
+  width: 50%;
+  display: flex;
+  align-items: flex-start;
+  font-size: $font-size-sm;
+  line-height: 1.5;
+}
+
+.infoLabel {
+  color: $color-text-tertiary;
+  flex-shrink: 0;
+  margin-right: $spacing-xs;
+}
+
+.infoValue {
+  color: $color-text-primary;
+  flex: 1;
+  @include text-ellipsis;
+}
+
+.reasonText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: 1.5;
+  margin-bottom: $spacing-md;
+  padding: $spacing-sm $spacing-md;
+  background: $color-bg-page;
+  border-radius: $radius-sm;
+}
+
+.resourceList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+}
+
+.resourceTag {
+  padding: $spacing-xs $spacing-sm;
+  background: rgba(30, 94, 255, 0.08);
+  color: $color-primary;
+  border-radius: $radius-xs;
+  font-size: $font-size-xs;
+}
+
+.footerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+}
+
+.contractorText {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  @include text-ellipsis;
+  flex: 1;
+}
+
+.dateText {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  flex-shrink: 0;
+  margin-left: $spacing-sm;
+}

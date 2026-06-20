@@ -1,0 +1,327 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 160rpx;
+}
+
+.basicSection {
+  background: $color-bg-card;
+  margin-bottom: $spacing-md;
+  padding: $spacing-lg;
+}
+
+.codeRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.codeText {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.titleText {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  line-height: 1.4;
+  margin-bottom: $spacing-md;
+}
+
+.contractorRow {
+  display: flex;
+  align-items: center;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.submitterInfo {
+  margin-left: $spacing-md;
+  padding-left: $spacing-md;
+  border-left: 1rpx solid $color-divider;
+}
+
+.sectionCard {
+  background: $color-bg-card;
+  margin: 0 $page-padding $spacing-md;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+  display: flex;
+  align-items: center;
+
+  &::before {
+    content: '';
+    width: 6rpx;
+    height: 32rpx;
+    background: $color-primary;
+    border-radius: 3rpx;
+    margin-right: $spacing-sm;
+  }
+}
+
+.infoList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.infoItem {
+  display: flex;
+  align-items: flex-start;
+}
+
+.infoLabel {
+  flex-shrink: 0;
+  width: 140rpx;
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.infoValue {
+  flex: 1;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  line-height: 1.6;
+}
+
+.reasonBox {
+  background: rgba(30, 94, 255, 0.06);
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  margin-top: $spacing-sm;
+}
+
+.reasonCategory {
+  font-size: $font-size-xs;
+  color: $color-primary;
+  margin-bottom: $spacing-xs;
+  font-weight: $font-weight-medium;
+}
+
+.reasonText {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  line-height: 1.6;
+}
+
+.resourceSection {
+  margin-top: $spacing-sm;
+}
+
+.resourceTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tableHeader {
+  display: flex;
+  background: $color-bg-page;
+  border-radius: $radius-sm $radius-sm 0 0;
+}
+
+.tableCell {
+  flex: 1;
+  padding: $spacing-sm $spacing-xs;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  text-align: center;
+
+  &:first-child {
+    text-align: left;
+    padding-left: $spacing-md;
+  }
+}
+
+.tableRow {
+  display: flex;
+  border-bottom: 1rpx solid $color-divider;
+
+  &:last-child {
+    border-bottom: none;
+    border-radius: 0 0 $radius-sm $radius-sm;
+  }
+
+  .tableCell {
+    font-size: $font-size-sm;
+    color: $color-text-primary;
+  }
+}
+
+.attachmentList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.attachmentItem {
+  display: flex;
+  align-items: center;
+  padding: $spacing-md;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.attachmentIcon {
+  width: 72rpx;
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+  background: $color-bg-card;
+  border-radius: $radius-sm;
+  margin-right: $spacing-md;
+}
+
+.attachmentInfo {
+  flex: 1;
+}
+
+.attachmentName {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
+  @include text-ellipsis;
+}
+
+.attachmentSize {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.attachmentSummary {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: $spacing-sm;
+  padding-top: $spacing-sm;
+  border-top: 1rpx solid $color-divider;
+}
+
+.bottomBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: $color-bg-card;
+  padding: $spacing-md $page-padding;
+  padding-bottom: calc(#{$spacing-md} + env(safe-area-inset-bottom));
+  box-shadow: 0 -2rpx 16rpx rgba(0, 0, 0, 0.06);
+  display: flex;
+  gap: $spacing-md;
+  z-index: 100;
+}
+
+.btn {
+  @include button-reset;
+  flex: 1;
+  height: $button-height-lg;
+  border-radius: $radius-button;
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.85;
+    transform: scale(0.98);
+  }
+
+  &.primary {
+    background: $color-primary;
+    color: $color-text-white;
+  }
+
+  &.secondary {
+    background: $color-bg-page;
+    color: $color-text-secondary;
+  }
+}
+
+.auditRecord {
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+}
+
+.auditRecordTitle {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+  margin-bottom: $spacing-sm;
+}
+
+.auditRecordContent {
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+}
+
+.auditResultRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-sm;
+}
+
+.resultTag {
+  padding: 4rpx 16rpx;
+  border-radius: $radius-sm;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+
+  &.true {
+    background: $bg-true;
+    color: $status-true;
+  }
+
+  &.partial {
+    background: $bg-partial;
+    color: $status-partial;
+  }
+
+  &.false {
+    background: $bg-false;
+    color: $status-false;
+  }
+}
+
+.auditorText {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.auditScope {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  line-height: 1.6;
+  margin-bottom: $spacing-sm;
+}
+
+.auditRemark {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  line-height: 1.5;
+}
+
+.auditTime {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  text-align: right;
+  margin-top: $spacing-sm;
+}

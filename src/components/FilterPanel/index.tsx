@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { View, Text, Picker } from '@tarojs/components'
-import Taro from '@tarojs/taro'
 import classnames from 'classnames'
 import styles from './index.module.scss'
 import type { FilterParams, VerifyResult } from '@/types/claim'

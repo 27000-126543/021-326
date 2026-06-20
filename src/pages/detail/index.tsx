@@ -22,12 +22,13 @@ const partyNames: Record<string, string> = {
 const DetailPage: React.FC = () => {
   const router = useRouter()
   const id = router.params.id as string
-  const getClaimById = useClaimStore((state) => state.getClaimById)
-  const getAuditRecordsByClaimId = useClaimStore((state) => state.getAuditRecordsByClaimId)
 
-  const claim = getClaimById(id)
-  const auditRecords = getAuditRecordsByClaimId(id)
-  const latestRecord = auditRecords[0]
+  const claim = useClaimStore((state) => state.claims.find((c) => c.id === id))
+  const auditRecords = useClaimStore((state) =>
+    state.auditRecords
+      .filter((r) => r.claimId === id)
+      .sort((a, b) => new Date(b.auditTime).getTime() - new Date(a.auditTime).getTime())
+  )
 
   useDidShow(() => {
     console.log('[Detail] 页面显示，事件ID:', id)

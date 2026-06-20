@@ -9,12 +9,11 @@ import type { VerifyResult, ResourceInfo } from '@/types/claim'
 const AuditPage: React.FC = () => {
   const router = useRouter()
   const claimId = router.params.id as string
-  const getClaimById = useClaimStore((state) => state.getClaimById)
+  const claim = useClaimStore((state) => state.claims.find((c) => c.id === claimId))
   const submitAudit = useClaimStore((state) => state.submitAudit)
-  const isSubmitting = useClaimStore((state) => state.isSubmitting)
+  const submittingClaimIds = useClaimStore((state) => state.submittingClaimIds)
 
-  const claim = getClaimById(claimId)
-  const claimIsSubmitting = isSubmitting(claimId)
+  const claimIsSubmitting = submittingClaimIds.has(claimId)
 
   const [result, setResult] = useState<VerifyResult | null>(null)
   const [approvedResources, setApprovedResources] = useState<ResourceInfo[]>([])
@@ -24,6 +23,7 @@ const AuditPage: React.FC = () => {
   const [localSubmitting, setLocalSubmitting] = useState(false)
 
   useEffect(() => {
+    if (localSubmitting) return
     if (claim) {
       if (claim.status === 'approved' || claim.status === 'partial' || claim.status === 'rejected') {
         Taro.showModal({
@@ -37,7 +37,6 @@ const AuditPage: React.FC = () => {
         return
       }
 
-      console.log('[Audit] 事件信息:', claim.code, claim.title)
       setApprovedResources(
         claim.resources.map((r) => ({
           ...r,
@@ -46,7 +45,7 @@ const AuditPage: React.FC = () => {
         }))
       )
     }
-  }, [claim])
+  }, [claim, localSubmitting])
 
   const handleResultSelect = (selected: VerifyResult) => {
     if (claimIsSubmitting || localSubmitting) return

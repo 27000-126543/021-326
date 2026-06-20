@@ -1,53 +1,55 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
-import Taro from '@tarojs/taro'
+import Taro, { useDidShow } from '@tarojs/taro'
 import classnames from 'classnames'
 import ClaimCard from '@/components/ClaimCard'
 import styles from './index.module.scss'
-import { mockPendingClaims, mockReviewingClaims } from '@/data/mockData'
+import { useClaimStore } from '@/store/useClaimStore'
 import type { ClaimRecord } from '@/types/claim'
 
 type FilterType = 'all' | 'pending' | 'reviewing'
 
 const PendingPage: React.FC = () => {
   const [filter, setFilter] = useState<FilterType>('all')
-  const [list, setList] = useState<ClaimRecord[]>([])
-  const [loading, setLoading] = useState(false)
+  const claims = useClaimStore((state) => state.claims)
 
-  const loadData = () => {
-    setLoading(true)
+  useDidShow(() => {
+    console.log('[Pending] 页面显示，数据已刷新')
+  })
+
+  const pendingClaims = claims.filter((c) => c.status === 'pending')
+  const reviewingClaims = claims.filter((c) => c.status === 'reviewing')
+  const pendingCount = pendingClaims.length
+  const reviewingCount = reviewingClaims.length
+  const totalCount = pendingCount + reviewingCount
+
+  const getFilteredList = (): ClaimRecord[] => {
+    if (filter === 'all') {
+      return [...pendingClaims, ...reviewingClaims]
+    } else if (filter === 'pending') {
+      return pendingClaims
+    } else {
+      return reviewingClaims
+    }
+  }
+
+  const list = getFilteredList()
+
+  const handleRefresh = () => {
     setTimeout(() => {
-      let data: ClaimRecord[] = []
-      if (filter === 'all') {
-        data = [...mockPendingClaims, ...mockReviewingClaims]
-      } else if (filter === 'pending') {
-        data = mockPendingClaims
-      } else {
-        data = mockReviewingClaims
-      }
-      setList(data)
-      setLoading(false)
       Taro.stopPullDownRefresh()
     }, 500)
   }
 
-  useEffect(() => {
-    loadData()
-  }, [filter])
-
-  useEffect(() => {
+  React.useEffect(() => {
     const pullDownRefresh = () => {
-      loadData()
+      handleRefresh()
     }
     Taro.onPullDownRefresh(pullDownRefresh)
     return () => {
       Taro.offPullDownRefresh(pullDownRefresh)
     }
-  }, [filter])
-
-  const pendingCount = mockPendingClaims.length
-  const reviewingCount = mockReviewingClaims.length
-  const totalCount = pendingCount + reviewingCount
+  }, [])
 
   return (
     <ScrollView className={styles.page} scrollY>

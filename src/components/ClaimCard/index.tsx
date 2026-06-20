@@ -3,14 +3,28 @@ import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import StatusTag from '@/components/StatusTag'
 import styles from './index.module.scss'
-import type { ClaimRecord } from '@/types/claim'
+import type { ClaimRecord, Attachment } from '@/types/claim'
 
 interface ClaimCardProps {
   claim: ClaimRecord
   onClick?: () => void
+  showAttachment?: boolean
 }
 
-const ClaimCard: React.FC<ClaimCardProps> = ({ claim, onClick }) => {
+const getAttachmentSummary = (attachments: Attachment[]) => {
+  const imageCount = attachments.filter((a) => a.type === 'image').length
+  const pdfCount = attachments.filter((a) => a.type === 'pdf').length
+  const docCount = attachments.filter((a) => a.type === 'doc').length
+
+  const items: { label: string; count: number; icon: string }[] = []
+  if (imageCount > 0) items.push({ label: '现场照片', count: imageCount, icon: '🖼️' })
+  if (pdfCount > 0) items.push({ label: 'PDF文档', count: pdfCount, icon: '📄' })
+  if (docCount > 0) items.push({ label: '文档', count: docCount, icon: '📝' })
+
+  return items
+}
+
+const ClaimCard: React.FC<ClaimCardProps> = ({ claim, onClick, showAttachment = true }) => {
   const handleClick = () => {
     if (onClick) {
       onClick()
@@ -20,6 +34,8 @@ const ClaimCard: React.FC<ClaimCardProps> = ({ claim, onClick }) => {
       })
     }
   }
+
+  const attachmentItems = getAttachmentSummary(claim.attachments)
 
   return (
     <View className={styles.claimCard} onClick={handleClick}>
@@ -59,6 +75,18 @@ const ClaimCard: React.FC<ClaimCardProps> = ({ claim, onClick }) => {
           </View>
         )}
       </View>
+
+      {showAttachment && attachmentItems.length > 0 && (
+        <View className={styles.attachmentBar}>
+          <Text className={styles.attachmentIcon}>📎</Text>
+          {attachmentItems.map((item, index) => (
+            <View key={index} className={styles.attachmentItem}>
+              <Text className={styles.attachmentCount}>{item.count}</Text>
+              <Text className={styles.attachmentLabel}>{item.label}</Text>
+            </View>
+          ))}
+        </View>
+      )}
 
       <View className={styles.footerRow}>
         <Text className={styles.contractorText}>{claim.contractor}</Text>

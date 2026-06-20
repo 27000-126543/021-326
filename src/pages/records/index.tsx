@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import classnames from 'classnames'
 import styles from './index.module.scss'
-import { mockAuditRecords } from '@/data/mockData'
+import { useClaimStore } from '@/store/useClaimStore'
 import type { AuditRecord, VerifyResult } from '@/types/claim'
 
 type FilterType = 'all' | 'true' | 'partial' | 'false'
@@ -16,32 +16,25 @@ const resultMap: Record<VerifyResult, string> = {
 
 const RecordsPage: React.FC = () => {
   const [filter, setFilter] = useState<FilterType>('all')
-  const [records, setRecords] = useState<AuditRecord[]>([])
-
-  const loadData = () => {
-    let data = [...mockAuditRecords]
-    if (filter !== 'all') {
-      data = data.filter((item) => item.result === filter)
-    }
-    setRecords(data)
-  }
-
-  useEffect(() => {
-    loadData()
-  }, [filter])
+  const auditRecords = useClaimStore((state) => state.auditRecords)
+  const user = useClaimStore((state) => state.user)
 
   useDidShow(() => {
-    loadData()
+    console.log('[Records] 页面显示，记录数:', auditRecords.length)
   })
 
-  const totalCount = mockAuditRecords.length
-  const trueCount = mockAuditRecords.filter((r) => r.result === 'true').length
-  const partialCount = mockAuditRecords.filter((r) => r.result === 'partial').length
-  const falseCount = mockAuditRecords.filter((r) => r.result === 'false').length
+  const filteredRecords = filter === 'all'
+    ? auditRecords
+    : auditRecords.filter((r) => r.result === filter)
+
+  const totalCount = auditRecords.length
+  const trueCount = auditRecords.filter((r) => r.result === 'true').length
+  const partialCount = auditRecords.filter((r) => r.result === 'partial').length
+  const falseCount = auditRecords.filter((r) => r.result === 'false').length
 
   const handleCardClick = (record: AuditRecord) => {
     Taro.navigateTo({
-      url: `/pages/detail?id=${record.claimId}&from=records`
+      url: `/pages/detail/index?id=${record.claimId}&from=records`
     })
   }
 
@@ -98,8 +91,8 @@ const RecordsPage: React.FC = () => {
       </View>
 
       <View className={styles.listContainer}>
-        {records.length > 0 ? (
-          records.map((record) => (
+        {filteredRecords.length > 0 ? (
+          filteredRecords.map((record) => (
             <View
               key={record.id}
               className={styles.auditCard}

@@ -1,25 +1,18 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import classnames from 'classnames'
 import styles from './index.module.scss'
-import { mockReviewingClaims } from '@/data/mockData'
+import { useClaimStore } from '@/store/useClaimStore'
 import type { ClaimRecord } from '@/types/claim'
 
 const VerifyPage: React.FC = () => {
-  const [verifyingList, setVerifyingList] = useState<ClaimRecord[]>([])
-
-  const loadData = () => {
-    setVerifyingList(mockReviewingClaims)
-  }
+  const claims = useClaimStore((state) => state.claims)
+  const verifyingList = claims.filter((c) => c.status === 'reviewing')
 
   useDidShow(() => {
-    loadData()
+    console.log('[Verify] 页面显示，核验中数量:', verifyingList.length)
   })
-
-  useEffect(() => {
-    loadData()
-  }, [])
 
   const handleScanCode = () => {
     Taro.scanCode({
@@ -56,6 +49,12 @@ const VerifyPage: React.FC = () => {
     })
   }
 
+  const handleViewDetail = (id: string) => {
+    Taro.navigateTo({
+      url: `/pages/detail/index?id=${id}`
+    })
+  }
+
   return (
     <View className={styles.page}>
       <View className={styles.header}>
@@ -88,7 +87,7 @@ const VerifyPage: React.FC = () => {
         </View>
 
         {verifyingList.length > 0 ? (
-          verifyingList.map((claim) => (
+          verifyingList.map((claim: ClaimRecord) => (
             <View key={claim.id} className={styles.verifyingCard}>
               <View className={styles.verifyingHeader}>
                 <Text className={styles.verifyingCode}>{claim.code}</Text>
@@ -103,7 +102,7 @@ const VerifyPage: React.FC = () => {
               <View className={styles.verifyingFooter}>
                 <View
                   className={classnames(styles.verifyBtn, styles.secondary)}
-                  onClick={() => Taro.navigateTo({ url: `/pages/detail/index?id=${claim.id}` })}
+                  onClick={() => handleViewDetail(claim.id)}
                 >
                   查看详情
                 </View>

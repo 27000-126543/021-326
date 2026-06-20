@@ -2,10 +2,11 @@ import React from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import styles from './index.module.scss'
-import { mockUserInfo } from '@/data/mockData'
+import { useClaimStore } from '@/store/useClaimStore'
 
 const MinePage: React.FC = () => {
-  const user = mockUserInfo
+  const user = useClaimStore((state) => state.user)
+  const resetStore = useClaimStore((state) => state.resetStore)
 
   const handleMenuClick = (key: string) => {
     console.log('[Mine] 点击菜单项:', key)
@@ -38,6 +39,21 @@ const MinePage: React.FC = () => {
         Taro.showToast({
           title: '反馈功能开发中',
           icon: 'none'
+        })
+        break
+      case 'reset':
+        Taro.showModal({
+          title: '重置数据',
+          content: '确定要重置所有数据吗？重置后将恢复初始演示数据。',
+          success: (res) => {
+            if (res.confirm) {
+              resetStore()
+              Taro.showToast({
+                title: '数据已重置',
+                icon: 'success'
+              })
+            }
+          }
         })
         break
       default:
@@ -107,6 +123,11 @@ const MinePage: React.FC = () => {
         <View className={styles.menuItem} onClick={() => handleMenuClick('about')}>
           <View className={styles.menuIcon}>ℹ️</View>
           <Text className={styles.menuText}>关于</Text>
+          <Text className={styles.menuArrow}>›</Text>
+        </View>
+        <View className={styles.menuItem} onClick={() => handleMenuClick('reset')}>
+          <View className={styles.menuIcon}>🔄</View>
+          <Text className={styles.menuText}>重置演示数据</Text>
           <Text className={styles.menuArrow}>›</Text>
         </View>
       </View>

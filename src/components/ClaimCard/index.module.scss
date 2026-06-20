@@ -94,6 +94,39 @@
   font-size: $font-size-xs;
 }
 
+.attachmentBar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  background: rgba(0, 180, 42, 0.06);
+  border-radius: $radius-sm;
+  margin-bottom: $spacing-md;
+}
+
+.attachmentIcon {
+  font-size: $font-size-md;
+  margin-right: $spacing-xs;
+}
+
+.attachmentItem {
+  display: flex;
+  align-items: center;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+.attachmentCount {
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+  margin: 0 $spacing-xs;
+}
+
+.attachmentLabel {
+  color: $color-text-tertiary;
+}
+
 .footerRow {
   display: flex;
   align-items: center;

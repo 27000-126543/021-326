@@ -3,12 +3,16 @@ import { View, Text, Textarea } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
 import classnames from 'classnames'
 import styles from './index.module.scss'
-import { mockAllClaims } from '@/data/mockData'
-import type { ClaimRecord, VerifyResult, ResourceInfo } from '@/types/claim'
+import { useClaimStore } from '@/store/useClaimStore'
+import type { VerifyResult, ResourceInfo } from '@/types/claim'
 
 const AuditPage: React.FC = () => {
   const router = useRouter()
-  const [claim, setClaim] = useState<ClaimRecord | null>(null)
+  const claimId = router.params.id as string
+  const getClaimById = useClaimStore((state) => state.getClaimById)
+  const submitAudit = useClaimStore((state) => state.submitAudit)
+  const claim = getClaimById(claimId)
+
   const [result, setResult] = useState<VerifyResult | null>(null)
   const [approvedResources, setApprovedResources] = useState<ResourceInfo[]>([])
   const [approvedScope, setApprovedScope] = useState('')
@@ -17,21 +21,17 @@ const AuditPage: React.FC = () => {
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
-    const id = router.params.id
-    console.log('[Audit] 事件ID:', id)
-
-    const found = mockAllClaims.find((c) => c.id === id)
-    if (found) {
-      setClaim(found)
+    if (claim) {
+      console.log('[Audit] 事件信息:', claim.code, claim.title)
       setApprovedResources(
-        found.resources.map((r) => ({
+        claim.resources.map((r) => ({
           ...r,
           duration: 1,
           durationUnit: '天'
         }))
       )
     }
-  }, [router.params.id])
+  }, [claim])
 
   const handleResultSelect = (selected: VerifyResult) => {
     setResult(selected)
@@ -115,26 +115,47 @@ const AuditPage: React.FC = () => {
   }
 
   const handleConfirmSubmit = async () => {
+    if (!claim || !result) return
+
     setSubmitting(true)
     console.log('[Audit] 提交核验结果:', {
-      claimId: claim?.id,
+      claimId: claim.id,
       result,
       approvedScope,
       approvedResources,
       remark
     })
 
-    setTimeout(() => {
-      setSubmitting(false)
-      setShowConfirm(false)
-      Taro.showToast({
-        title: '提交成功',
-        icon: 'success'
+    try {
+      const newRecord = submitAudit({
+        claimId: claim.id,
+        result,
+        approvedScope,
+        approvedResources,
+        remark: remark || undefined
       })
+
+      console.log('[Audit] 生成审核记录:', newRecord)
+
       setTimeout(() => {
-        Taro.navigateBack()
-      }, 1500)
-    }, 1000)
+        setSubmitting(false)
+        setShowConfirm(false)
+        Taro.showToast({
+          title: '提交成功',
+          icon: 'success'
+        })
+        setTimeout(() => {
+          Taro.navigateBack({ delta: 1 })
+        }, 1500)
+      }, 800)
+    } catch (error) {
+      console.error('[Audit] 提交失败:', error)
+      setSubmitting(false)
+      Taro.showToast({
+        title: '提交失败',
+        icon: 'none'
+      })
+    }
   }
 
   const resultText = result === 'true' ? '属实' : result === 'partial' ? '部分属实' : '不属实'

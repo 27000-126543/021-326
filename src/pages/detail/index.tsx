@@ -1,41 +1,29 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
-import Taro, { useRouter } from '@tarojs/taro'
+import Taro, { useRouter, useDidShow } from '@tarojs/taro'
 import classnames from 'classnames'
 import StatusTag from '@/components/StatusTag'
 import styles from './index.module.scss'
-import { mockAllClaims, mockAuditRecords } from '@/data/mockData'
-import type { ClaimRecord, AuditRecord } from '@/types/claim'
+import { useClaimStore } from '@/store/useClaimStore'
 
 const DetailPage: React.FC = () => {
   const router = useRouter()
-  const [claim, setClaim] = useState<ClaimRecord | null>(null)
-  const [auditRecord, setAuditRecord] = useState<AuditRecord | null>(null)
+  const id = router.params.id as string
+  const getClaimById = useClaimStore((state) => state.getClaimById)
+  const getAuditRecordsByClaimId = useClaimStore((state) => state.getAuditRecordsByClaimId)
 
-  useEffect(() => {
-    const id = router.params.id
-    console.log('[Detail] 事件ID:', id)
+  const claim = getClaimById(id)
+  const auditRecords = getAuditRecordsByClaimId(id)
+  const latestRecord = auditRecords[0]
 
-    const found = mockAllClaims.find((c) => c.id === id)
-    if (found) {
-      setClaim(found)
-    } else {
-      const firstClaim = mockAllClaims[0]
-      setClaim(firstClaim)
-    }
-
-    const audit = mockAuditRecords.find((a) => a.claimId === id)
-    if (audit) {
-      setAuditRecord(audit)
-    }
-  }, [router.params.id])
+  useDidShow(() => {
+    console.log('[Detail] 页面显示，事件ID:', id)
+  })
 
   const handleStartAudit = () => {
-    if (claim) {
-      Taro.navigateTo({
-        url: `/pages/audit/index?id=${claim.id}`
-      })
-    }
+    Taro.navigateTo({
+      url: `/pages/audit/index?id=${id}`
+    })
   }
 
   const handlePreviewAttachment = (name: string) => {
@@ -49,7 +37,7 @@ const DetailPage: React.FC = () => {
   if (!claim) {
     return (
       <View className={styles.page}>
-        <Text>加载中...</Text>
+        <Text>事件不存在</Text>
       </View>
     )
   }
@@ -151,27 +139,30 @@ const DetailPage: React.FC = () => {
         )}
       </View>
 
-      {auditRecord && (
+      {auditRecords.length > 0 && (
         <View className={styles.sectionCard}>
           <Text className={styles.sectionTitle}>审核记录</Text>
-          <View className={styles.auditRecordContent}>
-            <View className={styles.auditResultRow}>
-              <View className={classnames(
-                styles.resultTag,
-                styles[auditRecord.result]
-              )}>
-                {auditRecord.result === 'true' ? '属实' : auditRecord.result === 'partial' ? '部分属实' : '不属实'}
+          {auditRecords.map((record, index) => (
+            <View
+              key={record.id}
+              className={styles.auditRecord}
+              style={{ borderTop: index === 0 ? 'none' : '1rpx solid #f2f3f5' }}
+            >
+              <View className={styles.auditResultRow}>
+                <View className={classnames(styles.resultTag, styles[record.result])}>
+                  {record.result === 'true' ? '属实' : record.result === 'partial' ? '部分属实' : '不属实'}
+                </View>
+                <Text className={styles.auditorText}>
+                  {record.auditor}（{record.auditorRole}）
+                </Text>
               </View>
-              <Text className={styles.auditorText}>
-                {auditRecord.auditor}（{auditRecord.auditorRole}）
-              </Text>
+              <Text className={styles.auditScope}>{record.approvedScope}</Text>
+              {record.remark && (
+                <Text className={styles.auditRemark}>备注：{record.remark}</Text>
+              )}
+              <Text className={styles.auditTime}>{record.auditTime}</Text>
             </View>
-            <Text className={styles.auditScope}>{auditRecord.approvedScope}</Text>
-            {auditRecord.remark && (
-              <Text className={styles.auditRemark}>备注：{auditRecord.remark}</Text>
-            )}
-            <Text className={styles.auditTime}>{auditRecord.auditTime}</Text>
-          </View>
+          ))}
         </View>
       )}
 

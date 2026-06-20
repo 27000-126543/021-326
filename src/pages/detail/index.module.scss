@@ -521,3 +521,236 @@
   color: $color-text-secondary;
   line-height: 1.5;
 }
+
+.timelineTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+  display: flex;
+  align-items: center;
+
+  &::before {
+    content: '';
+    width: 6rpx;
+    height: 32rpx;
+    background: $color-primary;
+    border-radius: 3rpx;
+    margin-right: $spacing-sm;
+  }
+}
+
+.fullTimeline {
+  position: relative;
+}
+
+.timelineNode {
+  display: flex;
+  gap: $spacing-md;
+  padding-bottom: $spacing-md;
+
+  &.highlighted {
+    .timelineDot {
+      background: $color-primary;
+      box-shadow: 0 0 0 6rpx rgba(30, 94, 255, 0.2);
+    }
+
+    .timelineContent {
+      background: rgba(30, 94, 255, 0.05);
+      border-color: $color-primary;
+    }
+  }
+
+  &:last-child {
+    padding-bottom: 0;
+
+    .timelineConnector {
+      display: none;
+    }
+  }
+
+  &.submit .timelineDot {
+    background: #86909c;
+  }
+
+  &.sync .timelineDot {
+    background: $color-warning;
+  }
+
+  &.audit .timelineDot {
+    background: $color-primary;
+  }
+
+  &.read .timelineDot {
+    background: $status-true;
+  }
+
+  &.review .timelineDot {
+    background: #f77234;
+  }
+}
+
+.timelineLine {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 28rpx;
+  flex-shrink: 0;
+}
+
+.timelineDot {
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 50%;
+  background: $color-primary;
+  border: 4rpx solid $color-bg-card;
+  box-shadow: 0 0 0 2rpx currentColor;
+  flex-shrink: 0;
+  margin-top: 6rpx;
+}
+
+.timelineConnector {
+  width: 2rpx;
+  flex: 1;
+  background: $color-divider;
+  margin-top: $spacing-sm;
+  margin-bottom: -$spacing-sm;
+}
+
+.timelineContent {
+  flex: 1;
+  min-width: 0;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  border: 2rpx solid transparent;
+  transition: all $transition-base;
+}
+
+.timelineHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-sm;
+}
+
+.timelineAction {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+}
+
+.timelineTime {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.timelineDetail {
+  margin-top: $spacing-sm;
+}
+
+.timelineRemark {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: 1.5;
+}
+
+.inlineResult {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-sm;
+  flex-wrap: wrap;
+}
+
+.inlineTag {
+  padding: 4rpx 16rpx;
+  border-radius: $radius-sm;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  flex-shrink: 0;
+
+  &.true {
+    background: $bg-true;
+    color: $status-true;
+  }
+
+  &.partial {
+    background: $bg-partial;
+    color: $status-partial;
+  }
+
+  &.false {
+    background: $bg-false;
+    color: $status-false;
+  }
+}
+
+.inlineScope {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  line-height: 1.5;
+  flex: 1;
+  min-width: 0;
+}
+
+.inlineResources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-xs;
+  margin-top: $spacing-sm;
+  align-items: center;
+}
+
+.inlineResourceTag {
+  padding: 6rpx 14rpx;
+  background: rgba(30, 94, 255, 0.08);
+  border-radius: $radius-sm;
+  font-size: 20rpx;
+  color: $color-primary;
+}
+
+.inlineMore {
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+}
+
+.auditRecord {
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+  transition: all $transition-base;
+
+  &.highlighted {
+    background: rgba(30, 94, 255, 0.03);
+    border-radius: $radius-sm;
+    padding: $spacing-md;
+    margin-top: $spacing-sm;
+    border-top: none;
+  }
+}
+
+.reviewInline {
+  margin-top: $spacing-md;
+  padding: $spacing-md;
+  background: rgba(247, 114, 52, 0.05);
+  border-radius: $radius-sm;
+}
+
+.reviewInlineLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-right: $spacing-xs;
+}
+
+.reviewInlineText {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  margin-left: $spacing-sm;
+}
+
+.reviewInlineTime {
+  display: block;
+  margin-top: $spacing-xs;
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+}

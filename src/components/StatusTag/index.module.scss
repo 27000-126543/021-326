@@ -35,3 +35,23 @@
   color: $status-false;
   background: $bg-false;
 }
+
+.reviewing_owner {
+  color: #f77234;
+  background: rgba(247, 114, 52, 0.1);
+}
+
+.archived {
+  color: #14ae5c;
+  background: rgba(20, 174, 92, 0.1);
+}
+
+.disputed {
+  color: #f53f3f;
+  background: rgba(245, 63, 63, 0.1);
+}
+
+.returned {
+  color: #ff7d00;
+  background: rgba(255, 125, 0, 0.1);
+}

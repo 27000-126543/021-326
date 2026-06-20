@@ -1,6 +1,17 @@
-export type ClaimStatus = 'pending' | 'reviewing' | 'approved' | 'partial' | 'rejected'
+export type ClaimStatus =
+  | 'pending'
+  | 'reviewing'
+  | 'approved'
+  | 'partial'
+  | 'rejected'
+  | 'reviewing_owner'
+  | 'archived'
+  | 'disputed'
+  | 'returned'
 
 export type VerifyResult = 'true' | 'partial' | 'false'
+
+export type ReviewResult = 'agree' | 'return' | 'dispute'
 
 export type SyncStatus = 'unsynced' | 'synced' | 'read'
 
@@ -10,7 +21,8 @@ export interface FlowRecord {
   id: string
   claimId: string
   auditRecordId?: string
-  action: 'submit' | 'audit' | 'sync' | 'read' | 'comment'
+  reviewRecordId?: string
+  action: 'submit' | 'audit' | 'sync' | 'read' | 'review' | 'archive' | 'comment'
   party: PartyType
   partyName: string
   status: SyncStatus
@@ -78,6 +90,19 @@ export interface AuditRecord {
     contractor: boolean
     owner: boolean
   }
+  reviewStatus?: ReviewResult | 'pending' | 'none'
+  reviewRecordId?: string
+}
+
+export interface ReviewRecord {
+  id: string
+  auditRecordId: string
+  claimId: string
+  reviewer: string
+  reviewerRole: string
+  reviewTime: string
+  result: ReviewResult
+  remark?: string
 }
 
 export interface UserInfo {
@@ -103,4 +128,18 @@ export interface FilterParams {
   result?: VerifyResult | 'all'
   startDate?: string
   endDate?: string
+}
+
+export interface ProjectStats {
+  projectName: string
+  totalCount: number
+  pendingCount: number
+  reviewingCount: number
+  approvedCount: number
+  partialCount: number
+  rejectedCount: number
+  reviewingOwnerCount: number
+  archivedCount: number
+  disputedCount: number
+  returnedCount: number
 }

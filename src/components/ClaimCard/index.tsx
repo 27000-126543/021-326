@@ -9,6 +9,7 @@ interface ClaimCardProps {
   claim: ClaimRecord
   onClick?: () => void
   showAttachment?: boolean
+  compact?: boolean
 }
 
 const categoryIcons: Record<string, string> = {
@@ -41,7 +42,7 @@ const getAttachmentSummary = (attachments: Attachment[]) => {
   return Array.from(categoryMap.values())
 }
 
-const ClaimCard: React.FC<ClaimCardProps> = ({ claim, onClick, showAttachment = true }) => {
+const ClaimCard: React.FC<ClaimCardProps> = ({ claim, onClick, showAttachment = true, compact = false }) => {
   const handleClick = () => {
     if (onClick) {
       onClick()
@@ -53,6 +54,22 @@ const ClaimCard: React.FC<ClaimCardProps> = ({ claim, onClick, showAttachment = 
   }
 
   const attachmentItems = getAttachmentSummary(claim.attachments)
+
+  if (compact) {
+    return (
+      <View className={styles.claimCardCompact} onClick={handleClick}>
+        <View className={styles.compactHeader}>
+          <Text className={styles.compactCode}>{claim.code}</Text>
+          <StatusTag status={claim.status} />
+        </View>
+        <Text className={styles.compactTitle}>{claim.title}</Text>
+        <View className={styles.compactFooter}>
+          <Text className={styles.compactContractor}>{claim.contractor}</Text>
+          <Text className={styles.compactDate}>{claim.stopDate}</Text>
+        </View>
+      </View>
+    )
+  }
 
   return (
     <View className={styles.claimCard} onClick={handleClick}>

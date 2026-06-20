@@ -154,3 +154,56 @@
   flex-shrink: 0;
   margin-left: $spacing-sm;
 }
+
+.claimCardCompact {
+  background: $color-bg-card;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  margin-bottom: $spacing-sm;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.compactHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-xs;
+}
+
+.compactCode {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.compactTitle {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+  line-height: 1.4;
+  margin-bottom: $spacing-xs;
+  @include text-ellipsis;
+}
+
+.compactFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.compactContractor {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  flex: 1;
+  @include text-ellipsis;
+}
+
+.compactDate {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  flex-shrink: 0;
+  margin-left: $spacing-sm;
+}

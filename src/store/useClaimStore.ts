@@ -9,7 +9,10 @@ import type {
   ResourceInfo,
   FilterParams,
   FlowRecord,
-  SyncStatus
+  SyncStatus,
+  ReviewResult,
+  ReviewRecord,
+  ProjectStats
 } from '@/types/claim'
 import {
   mockPendingClaims,
@@ -17,6 +20,7 @@ import {
   mockApprovedClaims,
   mockUserInfo,
   mockAuditRecords,
+  mockReviewRecords,
   filterOptions
 } from '@/data/mockData'
 
@@ -51,12 +55,15 @@ const taroStorage = {
 interface ClaimStore {
   claims: ClaimRecord[]
   auditRecords: AuditRecord[]
+  reviewRecords: ReviewRecord[]
   user: UserInfo
   submittingClaimIds: Set<string>
+  reviewingRecordIds: Set<string>
   filterOptions: typeof filterOptions
 
   getClaimById: (id: string) => ClaimRecord | undefined
   getAuditRecordsByClaimId: (claimId: string) => AuditRecord[]
+  getReviewRecordById: (id: string) => ReviewRecord | undefined
   getPendingClaims: () => ClaimRecord[]
   getReviewingClaims: () => ClaimRecord[]
   getApprovedClaims: () => ClaimRecord[]
@@ -71,10 +78,19 @@ interface ClaimStore {
     remark?: string
   }) => AuditRecord | null
 
+  submitReview: (params: {
+    auditRecordId: string
+    claimId: string
+    result: ReviewResult
+    remark?: string
+  }) => ReviewRecord | null
+
   markAsRead: (claimId: string, party: 'contractor' | 'owner') => void
 
   updateStats: () => void
   isSubmitting: (claimId: string) => boolean
+  isReviewing: (auditRecordId: string) => boolean
+  getProjectStats: () => ProjectStats[]
   resetStore: () => void
 }
 
@@ -94,8 +110,10 @@ export const useClaimStore = create<ClaimStore>()(
     (set, get) => ({
       claims: initialClaims,
       auditRecords: mockAuditRecords,
+      reviewRecords: mockReviewRecords,
       user: mockUserInfo,
       submittingClaimIds: new Set(),
+      reviewingRecordIds: new Set(),
       filterOptions,
 
       getClaimById: (id) => {
@@ -106,6 +124,10 @@ export const useClaimStore = create<ClaimStore>()(
         return get().auditRecords
           .filter((r) => r.claimId === claimId)
           .sort((a, b) => new Date(b.auditTime).getTime() - new Date(a.auditTime).getTime())
+      },
+
+      getReviewRecordById: (id) => {
+        return get().reviewRecords.find((r) => r.id === id)
       },
 
       getPendingClaims: () => {
@@ -144,10 +166,10 @@ export const useClaimStore = create<ClaimStore>()(
           records = records.filter((r) => r.result === params.result)
         }
         if (params.startDate) {
-          records = records.filter((r) => r.auditTime >= params.startDate)
+          records = records.filter((r) => r.auditTime >= (params.startDate as string))
         }
         if (params.endDate) {
-          records = records.filter((r) => r.auditTime <= params.endDate + ' 23:59')
+          records = records.filter((r) => r.auditTime <= (params.endDate as string) + ' 23:59')
         }
 
         return records.sort(
@@ -315,16 +337,144 @@ export const useClaimStore = create<ClaimStore>()(
         }))
       },
 
+      submitReview: ({ auditRecordId, claimId, result, remark }) => {
+        const state = get()
+
+        if (state.reviewingRecordIds.has(auditRecordId)) {
+          console.warn('[Store] 重复复核拦截:', auditRecordId)
+          return null
+        }
+
+        const auditRecord = state.auditRecords.find((r) => r.id === auditRecordId)
+        if (!auditRecord) {
+          console.error('[Store] 审核记录不存在:', auditRecordId)
+          return null
+        }
+
+        if (auditRecord.reviewStatus && auditRecord.reviewStatus !== 'pending' && auditRecord.reviewStatus !== 'none') {
+          console.warn('[Store] 该记录已完成复核:', auditRecordId)
+          return null
+        }
+
+        set((state) => ({
+          reviewingRecordIds: new Set(state.reviewingRecordIds).add(auditRecordId)
+        }))
+
+        try {
+          const reviewTime = generateTimeString()
+          const user = state.user
+
+          const newReviewRecord: ReviewRecord = {
+            id: `rr_${Date.now()}`,
+            auditRecordId,
+            claimId,
+            reviewer: user.name,
+            reviewerRole: user.roleName,
+            reviewTime,
+            result,
+            remark
+          }
+
+          const newClaimStatus =
+            result === 'agree' ? 'archived' : result === 'return' ? 'returned' : 'disputed'
+
+          const reviewFlow: FlowRecord = {
+            id: `flow_${claimId}_review_${Date.now()}`,
+            claimId,
+            auditRecordId,
+            reviewRecordId: newReviewRecord.id,
+            action: 'review',
+            party: 'owner',
+            partyName: user.name,
+            status: 'synced',
+            time: reviewTime,
+            remark: `业主复核：${result === 'agree' ? '同意归档' : result === 'return' ? '退回补充' : '发起争议'}`
+          }
+
+          set((state) => ({
+            claims: state.claims.map((c) =>
+              c.id === claimId
+                ? {
+                    ...c,
+                    status: newClaimStatus,
+                    currentHandler:
+                      result === 'return' ? state.claims.find((cc) => cc.id === claimId)?.submitter : user.name,
+                    flowRecords: [...c.flowRecords, reviewFlow]
+                  }
+                : c
+            ),
+            auditRecords: state.auditRecords.map((r) =>
+              r.id === auditRecordId
+                ? { ...r, reviewStatus: result, reviewRecordId: newReviewRecord.id }
+                : r
+            ),
+            reviewRecords: [newReviewRecord, ...state.reviewRecords]
+          }))
+
+          console.log('[Store] 提交复核成功:', newReviewRecord)
+          return newReviewRecord
+        } finally {
+          set((state) => {
+            const newSet = new Set(state.reviewingRecordIds)
+            newSet.delete(auditRecordId)
+            return { reviewingRecordIds: newSet }
+          })
+        }
+      },
+
       isSubmitting: (claimId) => {
         return get().submittingClaimIds.has(claimId)
+      },
+
+      isReviewing: (auditRecordId) => {
+        return get().reviewingRecordIds.has(auditRecordId)
+      },
+
+      getProjectStats: () => {
+        const state = get()
+        const projectMap = new Map<string, ProjectStats>()
+
+        state.claims.forEach((c) => {
+          const name = c.projectName
+          if (!projectMap.has(name)) {
+            projectMap.set(name, {
+              projectName: name,
+              totalCount: 0,
+              pendingCount: 0,
+              reviewingCount: 0,
+              approvedCount: 0,
+              partialCount: 0,
+              rejectedCount: 0,
+              reviewingOwnerCount: 0,
+              archivedCount: 0,
+              disputedCount: 0,
+              returnedCount: 0
+            })
+          }
+          const stats = projectMap.get(name)!
+          stats.totalCount++
+          if (c.status === 'pending') stats.pendingCount++
+          else if (c.status === 'reviewing') stats.reviewingCount++
+          else if (c.status === 'approved') stats.approvedCount++
+          else if (c.status === 'partial') stats.partialCount++
+          else if (c.status === 'rejected') stats.rejectedCount++
+          else if (c.status === 'reviewing_owner') stats.reviewingOwnerCount++
+          else if (c.status === 'archived') stats.archivedCount++
+          else if (c.status === 'disputed') stats.disputedCount++
+          else if (c.status === 'returned') stats.returnedCount++
+        })
+
+        return Array.from(projectMap.values())
       },
 
       resetStore: () => {
         set({
           claims: initialClaims,
           auditRecords: mockAuditRecords,
+          reviewRecords: mockReviewRecords,
           user: mockUserInfo,
-          submittingClaimIds: new Set()
+          submittingClaimIds: new Set(),
+          reviewingRecordIds: new Set()
         })
         Taro.removeStorageSync('claim-audit-store')
         console.log('[Store] 数据已重置')
@@ -336,6 +486,7 @@ export const useClaimStore = create<ClaimStore>()(
       partialize: (state) => ({
         claims: state.claims,
         auditRecords: state.auditRecords,
+        reviewRecords: state.reviewRecords,
         user: state.user
       })
     }

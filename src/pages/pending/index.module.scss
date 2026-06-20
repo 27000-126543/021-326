@@ -48,13 +48,40 @@
   opacity: 0.85;
 }
 
-.filterBar {
+.toolbar {
   display: flex;
+  align-items: center;
+  gap: $spacing-md;
   padding: $spacing-md $page-padding;
   background: $color-bg-page;
   position: sticky;
   top: 0;
   z-index: 10;
+}
+
+.modeSwitch {
+  display: flex;
+  background: $color-bg-card;
+  border-radius: $radius-button;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.modeBtn {
+  padding: $spacing-sm $spacing-lg;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  transition: all $transition-base;
+
+  &.active {
+    background: $color-primary;
+    color: $color-text-white;
+  }
+}
+
+.filterBar {
+  display: flex;
+  flex: 1;
   gap: $spacing-sm;
 }
 
@@ -95,4 +122,86 @@
 .emptyText {
   font-size: $font-size-md;
   color: $color-text-tertiary;
+}
+
+.projectCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+}
+
+.projectHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.projectName {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.projectTotal {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.projectStats {
+  display: flex;
+  align-items: center;
+  padding: $spacing-md;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  margin-bottom: $spacing-md;
+}
+
+.projectStat {
+  flex: 1;
+  text-align: center;
+}
+
+.projectStatNum {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  display: block;
+  margin-bottom: $spacing-xs;
+}
+
+.projectStatLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.projectStatDivider {
+  width: 1rpx;
+  height: 60rpx;
+  background: $color-divider;
+}
+
+.projectClaims {
+  border-top: 1rpx solid $color-divider;
+  padding-top: $spacing-md;
+}
+
+.projectClaimsTitle {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-sm;
+  display: block;
+}
+
+.projectMoreBtn {
+  padding: $spacing-sm;
+  text-align: center;
+  font-size: $font-size-xs;
+  color: $color-primary;
+  background: rgba(30, 94, 255, 0.05);
+  border-radius: $radius-sm;
+  margin-top: $spacing-sm;
 }
